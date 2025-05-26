@@ -1,0 +1,26 @@
+{
+  "$id": "snapshotmeta.schema.json",
+  "type": "object",
+  "required": [
+    "version_id",
+    "created",
+    "hash"
+  ],
+  "properties": {
+    "version_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "parent_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hash": {
+      "type": "string"
+    }
+  }
+}

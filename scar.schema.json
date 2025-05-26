@@ -1,0 +1,43 @@
+{
+  "$id": "scar.schema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "axis",
+    "intensity",
+    "timestamp"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "deduction",
+        "abduction",
+        "contradiction",
+        "consensus"
+      ]
+    },
+    "axis": {
+      "type": "string",
+      "enum": [
+        "temporal",
+        "cultural",
+        "logical"
+      ]
+    },
+    "intensity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

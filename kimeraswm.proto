@@ -1,0 +1,91 @@
+syntax = "proto3";
+package kimeraswm.v0;
+
+import "google/protobuf/timestamp.proto";
+
+// Echoform message
+message Echoform {
+  string id = 1;
+  string symbol = 2;
+  repeated double vector = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+// Geoid message
+message Geoid {
+  string id = 1;
+  repeated string axes = 2;
+  repeated double rotation = 3;
+  repeated string echoform_ids = 4;
+  repeated string scar_ids = 5;
+}
+
+// Scar message
+message Scar {
+  string id = 1;
+  string type = 2;
+  string axis = 3;
+  double intensity = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// SnapshotMeta
+message SnapshotMeta {
+  string version_id = 1;
+  string parent_id = 2;
+  google.protobuf.Timestamp created = 3;
+  string hash = 4;
+}
+
+// DiffReport
+message DiffReport {
+  repeated string added = 1;
+  repeated string removed = 2;
+  repeated string changed = 3;
+}
+
+// ConsensusEvent
+message ConsensusEvent {
+  string event_id = 1;
+  repeated string scar_ids = 2;
+  string new_scar_id = 3;
+  string axis = 4;
+  map<string,double> intensity_map = 5;
+  double threshold = 6;
+  double cooldown = 7;
+  double diversity_factor = 8;
+  string agent_id = 9;
+  string rationale = 10;
+  google.protobuf.Timestamp timestamp = 11;
+}
+
+// Requests & Responses for Consensus
+message ConsensusRequest {
+  repeated string scar_ids = 1;
+  string axis = 2;
+  string agent_id = 3;
+  string rationale = 4;
+}
+
+message BulkConsensusRequest {
+  repeated string scar_ids = 1;
+  string axis = 2;
+  int32 batch_size = 3;
+  string agent_id = 4;
+  string rationale = 5;
+}
+
+message HistoryRequest {
+  google.protobuf.Timestamp since = 1;
+  string axis = 2;
+}
+
+message HistoryResponse {
+  repeated ConsensusEvent events = 1;
+}
+
+service ConsensusService {
+  rpc AddConsensus(ConsensusRequest) returns (ConsensusEvent);
+  rpc BulkConsensus(BulkConsensusRequest) returns (stream ConsensusEvent);
+  rpc GetHistory(HistoryRequest) returns (HistoryResponse);
+}

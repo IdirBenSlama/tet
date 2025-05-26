@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+numpy
+spacy
+# For OpenAPI/contract testing
+schemathesis
+pytest
+# For gRPC if used
+grpcio
+grpcio-tools

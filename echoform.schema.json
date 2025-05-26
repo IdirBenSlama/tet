@@ -1,0 +1,29 @@
+{
+  "$id": "echoform.schema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "symbol",
+    "vector",
+    "timestamp"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "vector": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

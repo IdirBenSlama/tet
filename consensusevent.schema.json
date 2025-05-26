@@ -1,0 +1,61 @@
+{
+  "$id": "consensusevent.schema.json",
+  "type": "object",
+  "required": [
+    "event_id",
+    "scar_ids",
+    "axis",
+    "timestamp"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "scar_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "new_scar_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "axis": {
+      "type": "string",
+      "enum": [
+        "temporal",
+        "cultural",
+        "logical"
+      ]
+    },
+    "intensity_map": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "threshold": {
+      "type": "number"
+    },
+    "cooldown": {
+      "type": "number"
+    },
+    "diversity_factor": {
+      "type": "number"
+    },
+    "agent_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

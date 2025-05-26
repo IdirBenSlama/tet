@@ -1,0 +1,27 @@
+{
+  "$id": "diffreport.schema.json",
+  "type": "object",
+  "properties": {
+    "added": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "removed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "changed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    }
+  }
+}

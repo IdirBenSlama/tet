@@ -1,0 +1,47 @@
+{
+  "$id": "geoid.schema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "axes",
+    "rotation",
+    "echoform_ids"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "axes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "temporal",
+          "cultural",
+          "logical"
+        ]
+      }
+    },
+    "rotation": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "echoform_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "scar_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    }
+  }
+}

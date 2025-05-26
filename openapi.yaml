@@ -1,0 +1,379 @@
+openapi: 3.0.3
+info:
+  title: Kimera-SWM v0.1 API
+  description: |
+    Contract-first spec for Kimera’s living-memory symbolic-semantic engine.
+    All endpoints mirror machine-readable JSON schemas and drive codegen.
+  version: 0.1.0
+servers:
+  - url: https://api.kimera-swm.local/v0.1
+    description: Primary API endpoint
+
+paths:
+  /intake:
+    post:
+      summary: Parse raw data into Echoforms
+      operationId: parseData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParseRequest'
+      responses:
+        '200':
+          description: List of extracted Echoforms and tension map
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParseResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /geoids/build:
+    post:
+      summary: Cluster Echoforms into Geoids
+      operationId: buildGeoids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildRequest'
+      responses:
+        '200':
+          description: Geoids packet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /reactor:
+    post:
+      summary: Run inference cycles (deduction, abduction, contradiction)
+      operationId: runReactor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactorRequest'
+      responses:
+        '200':
+          description: Inference result (updated Geoids, Scars)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /vault/checkpoint:
+    post:
+      summary: Snapshot current memory state
+      operationId: checkpointMemory
+      requestBody: {}
+      responses:
+        '200':
+          description: Snapshot metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotMeta'
+
+  /vault/reload:
+    post:
+      summary: Reload a snapshot (with per-axis decay)
+      operationId: reloadMemory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Reload result metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vault/versions:
+    get:
+      summary: List available snapshot versions
+      operationId: listSnapshots
+      responses:
+        '200':
+          description: Array of snapshot metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SnapshotMeta'
+
+  /vault/versions/{a}/diff/{b}:
+    get:
+      summary: Diff two snapshots
+      operationId: diffSnapshots
+      parameters:
+        - name: a
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: b
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Diff report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiffReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vault/merge:
+    post:
+      summary: Merge two snapshots (weighted union)
+      operationId: mergeSnapshots
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [a, b]
+              properties:
+                a:
+                  type: string
+                  format: uuid
+                b:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Merged snapshot metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /consensus:
+    post:
+      summary: Perform single consensus fusion on scars
+      operationId: addConsensus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsensusRequest'
+      responses:
+        '200':
+          description: Created ConsensusEvent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsensusEvent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer }
+        message: { type: string }
+
+    ParseRequest:
+      type: object
+      required: [data, format]
+      properties:
+        data: { type: string }
+        format:
+          type: string
+          enum: [text, json, csv]
+
+    ParseResponse:
+      type: object
+      properties:
+        echoforms:
+          type: array
+          items: { $ref: '#/components/schemas/Echoform' }
+        tension_map:
+          type: object
+          additionalProperties: { type: number }
+
+    BuildRequest:
+      type: object
+      required: [echoforms]
+      properties:
+        echoforms:
+          type: array
+          items: { $ref: '#/components/schemas/Echoform' }
+
+    BuildResponse:
+      type: object
+      properties:
+        geoids:
+          type: array
+          items: { $ref: '#/components/schemas/Geoid' }
+
+    ReactorRequest:
+      type: object
+      required: [echoforms, iterations]
+      properties:
+        echoforms:
+          type: array
+          items: { $ref: '#/components/schemas/Echoform' }
+        iterations: { type: integer, minimum: 1 }
+        explain_level:
+          type: string
+          enum: [summary, full]
+          default: full
+
+    ReactorResponse:
+      type: object
+      properties:
+        geoids: { type: array, items: { $ref: '#/components/schemas/Geoid' } }
+        scars: { type: array, items: { $ref: '#/components/schemas/Scar' } }
+
+    ConsensusRequest:
+      type: object
+      required: [scar_ids, axis, agent_id]
+      properties:
+        scar_ids:
+          type: array
+          items: { type: string, format: uuid }
+        axis:
+          type: string
+          enum: [temporal, cultural, logical]
+        agent_id: { type: string, format: uuid }
+        rationale: { type: string }
+
+    ConsensusEvent:
+      type: object
+      required: [event_id, scar_ids, axis, timestamp]
+      properties:
+        event_id: { type: string, format: uuid }
+        scar_ids:
+          type: array
+          items: { type: string, format: uuid }
+        new_scar_id: { type: string, format: uuid }
+        axis:
+          type: string
+          enum: [temporal, cultural, logical]
+        intensity_map:
+          type: object
+          additionalProperties: { type: number }
+        threshold: { type: number }
+        cooldown: { type: number }
+        diversity_factor: { type: number }
+        agent_id: { type: string, format: uuid }
+        rationale: { type: string }
+        timestamp: { type: string, format: date-time }
+
+    Echoform:
+      type: object
+      required: [id, symbol, vector, timestamp]
+      properties:
+        id: { type: string, format: uuid }
+        symbol: { type: string }
+        vector:
+          type: array
+          items: { type: number }
+        timestamp: { type: string, format: date-time }
+
+    Geoid:
+      type: object
+      required: [id, axes, rotation, echoform_ids]
+      properties:
+        id: { type: string, format: uuid }
+        axes:
+          type: array
+          items:
+            type: string
+            enum: [temporal, cultural, logical]
+        rotation:
+          type: array
+          items: { type: number }
+        echoform_ids:
+          type: array
+          items: { type: string, format: uuid }
+        scar_ids:
+          type: array
+          items: { type: string, format: uuid }
+
+    Scar:
+      type: object
+      required: [id, type, axis, intensity, timestamp]
+      properties:
+        id: { type: string, format: uuid }
+        type:
+          type: string
+          enum: [deduction, abduction, contradiction, consensus]
+        axis:
+          type: string
+          enum: [temporal, cultural, logical]
+        intensity:
+          type: number
+          minimum: 0
+          maximum: 1
+        timestamp: { type: string, format: date-time }
+
+    SnapshotMeta:
+      type: object
+      required: [version_id, created, hash]
+      properties:
+        version_id: { type: string, format: uuid }
+        parent_id: { type: string, format: uuid }
+        created: { type: string, format: date-time }
+        hash: { type: string }
+
+    DiffReport:
+      type: object
+      properties:
+        added:
+          type: array
+          items: { type: string, format: uuid }
+        removed:
+          type: array
+          items: { type: string, format: uuid }
+        changed:
+          type: array
+          items: { type: string, format: uuid }
